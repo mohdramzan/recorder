@@ -33,6 +33,7 @@ namespace studentapp.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Student student)
         {
+            student.DateTime = student.DateTime.Date;
              _studentContext.Students.Add(student);
            return Ok(_studentContext.SaveChanges());
         }
@@ -41,9 +42,11 @@ namespace studentapp.Controllers
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Student student)
         {
-           var result =   _studentContext.Students.Find(id);
+           var result =   _studentContext.Students.AsNoTracking().FirstOrDefault(x => x.Id == id);
             if(result !=  null)
             {
+                student.DateTime = student.DateTime.Date;
+
                 _studentContext.Students.Update(student);
                             return Ok(_studentContext.SaveChanges());
             }
@@ -64,6 +67,13 @@ namespace studentapp.Controllers
             }
 
             return BadRequest("Student doesn't exist");
+        }
+
+        [HttpGet("FilterStudents")]
+        public async Task<IActionResult> FilterStudents(string  name)
+        {
+
+           return   Ok(await _studentContext.Students.Where(x => x.Name.ToLower().Contains(name.ToLower())).ToListAsync());
         }
     }
 }

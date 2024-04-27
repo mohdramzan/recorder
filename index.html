@@ -1,91 +1,136 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Client Project</title>
-  <style type='text/css'>
-#msg {
- 
+  <meta charset="UTF-8">
   
-}
-button {
-  padding: 5px 10px;
-  border: 1px solid grey;
-  font-size: 18px;
-  background: white;
-}
+  <!-- Design by foolishdeveloper.com -->
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script  src="./js/index.js"></script>
+  <link rel="stylesheet" href="index.css" />
+  <style media="screen">
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-.audio-controls {
-  display: flex;
-  align-items: center;
-  padding-top: 20px;
-  justify-content: center;
-}
-.audio-controls button {
-  margin: 0px 5px;
-}
-canvas {
-  margin-top: 10px;
-  background-color: black;
-}
-select {
-  height: 25px;
-  margin: 0px 5px;
-}
-a {
-  margin-left: 20px;
-}
-.app {
-  text-align: center;
-  padding-top: 20px;
-}
-#radar-circle{
-  width: 28px;
-  height: 28px;
-}
   </style>
 </head>
+<!-- {
+  "id": 0,
+  "name": "string",
+  "fatherName": "string",
+  "class": "string",
+  "rollNo": "string",
+  "address": "string",
+  "dateTime": "2024-04-27T05:10:16.790Z",
+  "rupees": 0,
+  "imgPath": "string"
+} -->
 <body>
+  <div class="wrapper">
 
-  <div class="app">
-    <!-- <select name="" id="micSelect"></select> -->
+ 
+  <div  style="margin: 3rem;">
+    <div class="registration_form">
+      <div class="title">
+       Library Issue Register
+      </div>
+<div>
+</div>
+      <form onsubmit="submitForm(event)" id="myForm">
+        <div class="form_wrap">
+          <input type="hidden" id="id" />
 
-  
-    <a id="download" >Download</a>
-  
-    <div class="audio-controls">
-      <button id="record">Record</button>
-      <button id="stop">Stop</button>
-      <audio id="audio" controls></audio>
-  
-    </div>
-    <div id="mic">
-      <svg id="radar-circle">
-        <circle cx="50%" cy="50%" r="0" fill-opacity="0" stroke="red" stroke-width="2px" stroke-opacity="1">
-          <animate attributeName="r" from="0" to="15" dur="3s" repeatCount="indefinite" />
-          <animate attributeName="stroke-opacity" from="1" to="0" dur="3s" repeatCount="indefinite"></animate>
-        </circle>
-        
-        <circle cx="50%" cy="50%" r="0" fill-opacity="0" stroke="red" stroke-width="2px" stroke-opacity="1">
-          <animate attributeName="r" from="0" to="15" dur="3s" repeatCount="indefinite" begin="0.75s" />
-          <animate attributeName="stroke-opacity" from="1" to="0" dur="3s" repeatCount="indefinite" begin="0.75s"></animate>
-        </circle>
-        
-        <circle cx="50%" cy="50%" r="0" fill-opacity="0" stroke="red" stroke-width="2px" stroke-opacity="1">
-          <animate attributeName="r" from="0" to="15" dur="3s" repeatCount="indefinite" begin="1.5s" />
-          <animate attributeName="stroke-opacity" from="1" to="0" dur="3s" repeatCount="indefinite" begin="1.5s"></animate>
-        </circle>     
-        <circle cx="50%" cy="50%" r="5" fill="red" stroke="red"></circle></svg>
-       <div id="msg"> 
-      Recording... <div id='seconds-counter'> </div>
-  
-  </div>
+          <div class="input_grp">
+            <div class="input_wrap">
+              <label for="name">Name</label>
+              <input type="text" name="name" id="name">
+            </div>
+            <div class="input_wrap">
+              <label for="fname">Fathers's Name</label>
+              <input type="text" name="fathername" id="fname">
+            </div>
+          </div>
+          <div class="input_wrap">
+            <label for="class">Class</label>
+            <input type="text" name="class" id="class">
+          </div>
+
+          <div class="input_wrap">
+            <label for="rollno">Roll No</label>
+            <input type="text" name="rollno" id="rollNo">
+          </div>
+          <div class="input_wrap">
+            <label for="address">Address</label>
+            <input type="text" name="address" id="address">
+          </div>
+
+          <div class="input_wrap">
+            <label for="date">Date</label>
+            <input type="date" name="date" id="date">
+          </div>
+
+
+
+          <div class="input_wrap">
+            <button type="submit"  value="Register" class="submit_btn">Regishter </button>
+            <button type="button"onclick="reset()" class="btn">Reset</button>
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+      </form>
+   
     </div>
    
-  
-  <div>
+  </div>
+  <div style="margin: 3rem; height: 80vh; overflow: auto;">
+    <div class="view-data">
+      <div class="title">
+       List of All Students
+      </div>
+  <input placeholder="Search Student" name="search" id="search" onkeyup="handlechange(event)" type="text"class="searchinut" />
 
-  <script src="./js/index.js"></script>
+      <table id="customers" >
+        <tr class="abc">
+          <th >Name</th>
+          <th>Father's Name</th>
+          <th>Class</th>
+          <th style="width: 70px;">Roll No</th>
+          <th>Address</th>
+          <th style="width: 112px;">Date</th>
+          <th style="background-color: red;">Actions</th>
+        </tr>
+      
+      </table>
+    </div>
+  </div>
+</div>
+<div id="printableArea">
+  <div id="mid">
+    <div class="info">
+      <h2>Govt. boys heigher secondary institute </h2>
+      <div>Trehgam Dist Kupwara</div>
+     
+    </div>
+    <div ><span class="row">Name :</spn> <span id="n"></span></div>
+    <div ><span class="row">Father's Name :</span> <span id="fn"></span></div>
+    <div ><span class="row">Class :</span> <span id="c"></span></div>
+    <div ><span class="row">Roll No :</span> <span id="rn"></span></div>
+    <div ><span class="row">Address :</span> <span id="add"></span></div>
+    <div ><span class="row">Date:</span> <span id="da"></span></div>
+    <footer style="margin-top: 50px;">
+      signature : ________________________
+    </footer>
+  </div><!--
+</div>
+
+
 </body>
 </html>

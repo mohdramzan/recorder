@@ -1,237 +1,180 @@
-(async () => {
-    let leftchannel = [];
-    let rightchannel = [];
-    let recorder = null;
-    let recording = false;
-    let recordingLength = 0;
-    let volume = null;
-    let audioInput = null;
-    let sampleRate = null;
-    let AudioContext = window.AudioContext || window.webkitAudioContext;
-    let context = null;
-    let analyser = null;
-    let canvas = document.querySelector('canvas');
-    // let visualSelect = document.querySelector('#visSelect');
-   
-    let stream = null;
-    let tested = false;
-    
-    try {
-      window.stream = stream = await getStream();
-      console.log('Got stream');  
-    } catch(err) {
-      alert('Issue getting mic', err);
-    }
-    
-    const deviceInfos = await navigator.mediaDevices.enumerateDevices();
-    
-   
-    function getStream(constraints) {
-      if (!constraints) {
-        constraints = { audio: true, video: false };
-      }
-      return navigator.mediaDevices.getUserMedia(constraints);
-    }
-    
-    
-    setUpRecording();
-    
-    function setUpRecording() {
-      context = new AudioContext();
-      sampleRate = context.sampleRate;
-      
-      // creates a gain node
-      volume = context.createGain();
-      
-      // creates an audio node from teh microphone incoming stream
-      audioInput = context.createMediaStreamSource(stream);
-      
-      // Create analyser
-      analyser = context.createAnalyser();
-      
-      // connect audio input to the analyser
-      audioInput.connect(analyser);
-      
-      // connect analyser to the volume control
-      // analyser.connect(volume);
-      
-      let bufferSize = 2048;
-      let recorder = context.createScriptProcessor(bufferSize, 2, 2);
-      
-      // we connect the volume control to the processor
-      // volume.connect(recorder);
-      
-      analyser.connect(recorder);
-      
-      // finally connect the processor to the output
-      recorder.connect(context.destination); 
-  
-      recorder.onaudioprocess = function(e) {
-        // Check 
-        if (!recording) return;
-        // Do something with the data, i.e Convert this to WAV
-        console.log('recording');
-        let left = e.inputBuffer.getChannelData(0);
-        let right = e.inputBuffer.getChannelData(1);
-        if (!tested) {
-          tested = true;
-          // if this reduces to 0 we are not getting any sound
-          if ( !left.reduce((a, b) => a + b) ) {
-            alert("There seems to be an issue with your Mic");
-            // clean up;
-            stop();
-            stream.getTracks().forEach(function(track) {
-              track.stop();
-            });
-            context.close();
-          }
-        }
-        // we clone the samples
-        leftchannel.push(new Float32Array(left));
-        rightchannel.push(new Float32Array(right));
-        recordingLength += bufferSize;
-      };
-  
-    };
-    
-    
-  
-    function mergeBuffers(channelBuffer, recordingLength) {
-      let result = new Float32Array(recordingLength);
-      let offset = 0;
-      let lng = channelBuffer.length;
-      for (let i = 0; i < lng; i++){
-        let buffer = channelBuffer[i];
-        result.set(buffer, offset);
-        offset += buffer.length;
-      }
-      return result;
-    }
-    
-    function interleave(leftChannel, rightChannel){
-      let length = leftChannel.length + rightChannel.length;
-      let result = new Float32Array(length);
-  
-      let inputIndex = 0;
-  
-      for (let index = 0; index < length; ){
-        result[index++] = leftChannel[inputIndex];
-        result[index++] = rightChannel[inputIndex];
-        inputIndex++;
-      }
-      return result;
-    }
-    
-    function writeUTFBytes(view, offset, string){ 
-      let lng = string.length;
-      for (let i = 0; i < lng; i++){
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    }
-    document.querySelector('#mic').style.visibility = 'hidden'
-    function start() {
-      recording = true;
-      document.querySelector('#msg').style.visibility = 'visible'
-      document.querySelector('#audio').style.visibility = 'hidden'
-      document.querySelector('#mic').style.visibility = 'visible'
-     
-      // reset the buffers for the new recording
-      leftchannel.length = rightchannel.length = 0;
-      recordingLength = 0;
-      console.log('context: ', !!context);
-      if (!context) setUpRecording();
-    }
-  
-    function stop() {
-      console.log('Stop')
-      recording = false;
-      document.querySelector('#msg').style.visibility = 'hidden'
-      document.querySelector('#audio').style.visibility = 'visible'
-      document.querySelector('#mic').style.visibility = 'hidden'
 
-      
-      // we flat the left and right channels down
-      let leftBuffer = mergeBuffers ( leftchannel, recordingLength );
-      let rightBuffer = mergeBuffers ( rightchannel, recordingLength );
-      // we interleave both channels together
-      let interleaved = interleave ( leftBuffer, rightBuffer );
-      
-      ///////////// WAV Encode /////////////////
-      // from http://typedarray.org/from-microphone-to-wav-with-getusermedia-and-web-audio/
-      //
+displayAll();
+function submitForm(event) {
+  event.preventDefault();
   
-      // we create our wav file
-      let buffer = new ArrayBuffer(44 + interleaved.length * 2);
-      let view = new DataView(buffer);
+  var formData = {
+    "id": event.target.elements.id.value ? Number(event.target.elements.id.value) : 0,
+    "name": event.target.elements.name.value.trim(),
+    "fatherName": event.target.fathername.value.trim(),
+    "class": event.target.elements.class.value.trim(),
+    "rollNo": event.target.elements.rollno.value.trim(),
+    "address": event.target.elements.address.value.trim(),
+    "dateTime": event.target.elements.date.value.trim(),
+    "rupees": 0,
+    "imgPath": "string"
+  }
+if(formData.id > 0){
+  fetch("https://localhost:7128/api/student/" + formData.id, {
+    method: "PUT",
+    headers: {'Content-Type': 'application/json'}, 
+    body: JSON.stringify(formData)
+  }).then(res => {
+    console.log("Request complete! response:", res);
   
-      // RIFF chunk descriptor
-      writeUTFBytes(view, 0, 'RIFF');
-      view.setUint32(4, 44 + interleaved.length * 2, true);
-      writeUTFBytes(view, 8, 'WAVE');
-      // FMT sub-chunk
-      writeUTFBytes(view, 12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      // stereo (2 channels)
-      view.setUint16(22, 2, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, sampleRate * 4, true);
-      view.setUint16(32, 4, true);
-      view.setUint16(34, 16, true);
-      // data sub-chunk
-      writeUTFBytes(view, 36, 'data');
-      view.setUint32(40, interleaved.length * 2, true);
+    document.getElementById("myForm").reset();
+    alert("Updated Successfully!")
+    displayAll();
+  });
+}
+ else {
+  fetch("https://localhost:7128/api/student", {
+    method: "POST",
+    headers: {'Content-Type': 'application/json'}, 
+    body: JSON.stringify(formData)
+  }).then(res => {
+    console.log("Request complete! response:", res);
   
-      // write the PCM samples
-      let lng = interleaved.length;
-      let index = 44;
-      let volume = 1;
-      for (let i = 0; i < lng; i++){
-          view.setInt16(index, interleaved[i] * (0x7FFF * volume), true);
-          index += 2;
-      }
-  
-      // our final binary blob
-      const blob = new Blob ( [ view ], { type : 'audio/wav' } );
-      
-      const audioUrl = URL.createObjectURL(blob);
-      console.log('BLOB ', blob);
-      console.log('URL ', audioUrl);
-      document.querySelector('#audio').setAttribute('src', audioUrl);
-      const link = document.querySelector('#download');
-      link.setAttribute('href', audioUrl);
-      link.download = 'output.wav';
-    }
+    document.getElementById("myForm").reset();
+    alert("Save Successfully!")
+    displayAll();
+  });
+} 
 
-    function pause() {
-      recording = false;
-      context.suspend()
+
+  
+}
+
+
+
+function reset() {
+  document.getElementById("myForm").reset();
+}
+function displayAll() {
+  let url = "https://localhost:7128/api/student";
+
+  fetch(url,{
+    method: "GET",
+    headers: {'Content-Type': 'application/json'}, 
+  }).then(function(response){
+    response.json().then(function(data) {
+      console.log(data);
+      return data;
+    })
+    .then((data) => { 
+  let elements = document.getElementsByClassName("rows");
+  while (elements.length > 0) {
+    elements[0].parentNode.removeChild(elements[0]);
+  }
+
+      data.forEach((item) => {
+        showAllStudents(item);
+      })
+    })
+  });
+}
+
+function showAllStudents(data) {
+  let countries = document.getElementById("customers");
+
+  var date = convert(data.dateTime);
+  let div = document.createElement("tr");
+  div.className = "rows"
+  div.innerHTML = `<td>${data.name}</td>
+                   <td>${data.fatherName}</td>
+                   <td> ${data.class}</td>
+                   <td>${data.rollNo}</td>
+                   <td>${data.address}</td>
+                   <td>${date}</td>
+                   <td><a style="margin-right:2px;" href="#" onclick='editStudent(${(JSON.stringify(data))})' >Edit</a> | <a href="#"style="margin-right:2px;" onclick='printDiv(${(JSON.stringify(data))})' >Print</a> |  <a  href="#" onclick="deleteStudent(${data.id})" style="margin-left:2px;">Delete</a></td>`
+  countries.appendChild(div);
+}
+
+
+function deleteStudent(id) {
+  if(!confirm("Are you sure you want to delete the data")){
+    return;
+  }
+
+  let url = "https://localhost:7128/api/student/" + id;
+
+  fetch(url,{
+    method: "DELETE",
+    headers: {'Content-Type': 'application/json'}, 
+  }).then(function(response){
+    alert("Deleted Successfully!")
+    displayAll();
+
+  });
+}
+
+
+function editStudent(data ){
+
+  document.getElementById('id').value = data.id ;
+  
+   document.getElementById('name').value = data.name ;
+   document.getElementById('fname').value = data.fatherName ;
+   document.getElementById('class').value = data.class ;
+   document.getElementById('rollNo').value = data?.rollNo ;
+   document.getElementById('address').value = data.address ;
+   document.getElementById('date').value = convert(data.dateTime);
+
+}
+
+function convert(str) {
+  var date = new Date(str),
+    mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+    day = ("0" + date.getDate()).slice(-2);
+  return [date.getFullYear(), mnth, day].join("-");
+}
+
+function printDiv(data) {
+  document.getElementById('n').innerHTML = data.name ;
+  document.getElementById('fn').innerHTML = data.fatherName ;
+  document.getElementById('c').innerHTML = data.class ;
+  document.getElementById('rn').innerHTML = data.rollNo ;
+  document.getElementById('add').innerHTML = data.address ;
+  document.getElementById('da').innerHTML = convert(data.dateTime);
+  var printContents = document.getElementById("printableArea").innerHTML;
+  var originalContents = document.body.innerHTML;
+
+  document.body.innerHTML = printContents;
+
+  window.print();
+
+  document.body.innerHTML = originalContents;
+}
+
+function handlechange(e) {
+
+  var filter = e.target.value;
+  if(filter){
+    let url = "https://localhost:7128/api/student/filterStudents?name=" + filter;
+
+    fetch(url,{
+      method: "GET",
+      headers: {'Content-Type': 'application/json'}, 
+    }).then(function(response){
+      response.json().then(function(data) {
+        console.log(data);
+        return data;
+      })
+      .then((data) => { 
+    let elements = document.getElementsByClassName("rows");
+    while (elements.length > 0) {
+      elements[0].parentNode.removeChild(elements[0]);
     }
   
-    function resume() {
-      recording = true;
-      context.resume();
-    }
-    var seconds = 0;
-    var el = document.getElementById('seconds-counter');
+        data.forEach((item) => {
+          showAllStudents(item);
+        })
+      })
+    });
+  }else {
+    displayAll();
+  }
+      
     
-    function incrementSeconds() {
-        if ( recording == false ) {
-            seconds = 0;
-
-      }
-        seconds += 1;
-        el.innerText = "You have been here for " + seconds + " seconds.";
-      
-     
-    }
-    document.querySelector('#record').onclick = (e) => {
-      console.log('Start recording')
-      start();
-      var cancel = setInterval(incrementSeconds, 1000);
-    }
-  
-    document.querySelector('#stop').onclick = (e) => {
-      stop();
-    }
-  })()
+    
+}
