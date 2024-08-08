@@ -1,0 +1,97 @@
+1.Garbage collection is an automatic process in many programming languages that frees up memory that is no longer being used by a program. It identifies objects that are no longer needed (garbage) and recycles their memory for future use, helping to prevent memory leaks and optimize the use of system resources.
+
+
+ if we talk about MVC, Model  Represents the application's data and business logic. It is responsible for retrieving and stroring model state in a database.
+View: Represents the user interface. it displays data from the model to the user and sends user commands to the controller.
+Controller: Handles user input and interaction . It works with the model  to perform user actions  and returns the appropriate view.
+Asp.net Web Forms: is a traditional framework for building  web applications. it uses an event-driven, drag and drop approach for building webpages, similar to windows forms applications
+
+
+3.I was part of a development team responsible for maintaining and enhancing a legacy enterprise resource planning system built on aps.net webworms . the application had been developed over several years, with numerous developers contributing to the codebase. As a result  it had become monolithic , with tightly coupled components, duplicated code, and outdated technologies, 
+The primary challenges were;
+ i) poor code quality
+ II) performances issues:
+ iii) lack of testability:
+ iv) Difficulty in adding features.
+ To refactor the application we adopted a systematic and incremental approach to ensure stability and minimize disruption to users. 
+Here are the steps which we followed. 
+1. Code review and analysis
+2.identify pain points.
+3. define objectives.
+4. Devine objectives.
+5.create a road map.
+6. implementing refactoring.
+7.introduce unit Testing.
+8.optimize database operations.
+
+4.Ans. Entity framework is an open-source object relational mapper for .net applications. It enables developers to work with a database using .net objects removing the need for most of data
+access code that developers usually need to write. Entity Framework  allows developers to interact with a database using high-level abstractions and focus more on the application
+business logic rather then the underlying database interaction.
+
+5.
+using System;
+public class Program
+{
+    public static int FindNthLargest(int[] nums, int n)
+    {
+        if (n < 1 || n > nums.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(n), "n must be between 1 and the number of elements in the array.");
+        }
+        return FindNthLargest(nums, 0, nums.Length - 1, n);
+    }
+    private static int FindNthLargest(int[] nums, int start, int end, int n)
+    {
+               if (start == end)
+        {
+            return nums[start];
+        }
+        int pivotIndex = Partition(nums, start, end);
+               int rightCount = end - pivotIndex + 1;
+        
+        if (rightCount == n)
+        {
+            return nums[pivotIndex];
+        }
+       
+        else if (n < rightCount)
+        {
+            return FindNthLargest(nums, pivotIndex + 1, end, n);
+        }
+    
+        else
+        {
+            return FindNthLargest(nums, start, pivotIndex - 1, n - rightCount);
+        }
+    }
+   
+    private static int Partition(int[] nums, int start, int end)
+    {
+        int pivot = nums[end];
+        int i = start - 1;
+        for (int j = start; j < end; j++)
+        {
+            if (nums[j] >= pivot)
+            {
+                i++;
+                Swap(nums, i, j);
+            }
+        }
+        Swap(nums, i + 1, end);
+        return i + 1;
+    }
+    private static void Swap(int[] nums, int i, int j)
+    {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+    public static void Main()
+    {
+        int[] array = { 3, 2, 1, 5, 6, 4 };
+        int n = 2; // Find the 2nd largest number
+        Console.WriteLine("The " + n + "th largest number is: " + FindNthLargest(array, n));
+    }
+}
+
+6)
